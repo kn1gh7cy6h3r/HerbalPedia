@@ -47,6 +47,16 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+@theme {
+  --default-container-center: true;
+}
+
+@layer base {
+  .container {
+    @apply mx-auto px-4;
+  }
+}
+
 :root {
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
