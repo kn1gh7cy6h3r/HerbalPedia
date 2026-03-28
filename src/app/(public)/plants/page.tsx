@@ -17,7 +17,9 @@ async function getPlants() {
   return plants;
 }
 
-export default async function PlantsPage() {
+export default async function PlantsPage(props: { searchParams?: Promise<{ q?: string }> }) {
+  const searchParams = props.searchParams ? await props.searchParams : {};
+  const query = searchParams.q?.toLowerCase() || '';
   const plants = await getPlants();
 
   const getSafetyBadgeColor = (rating: string) => {
@@ -29,30 +31,59 @@ export default async function PlantsPage() {
     }
   };
 
+  // 1. Sort Alphabetically by Default (English name or Scientific Name)
+  let displayPlants = plants || [];
+  displayPlants.sort((a: any, b: any) => {
+    const nameA = (a.common_names?.english || a.scientific_name || '').toLowerCase();
+    const nameB = (b.common_names?.english || b.scientific_name || '').toLowerCase();
+    return nameA.localeCompare(nameB);
+  });
+
+  // 2. Perform robust search filtering if query exists
+  if (query) {
+    displayPlants = displayPlants.filter((plant: any) => {
+      const targets = [
+        plant.scientific_name,
+        plant.slug,
+        plant.common_names?.english,
+        plant.common_names?.hindi,
+        ...(plant.common_names?.regional || []),
+        ...(plant.active_compounds || [])
+      ].filter(Boolean).map(s => String(s).toLowerCase());
+      
+      return targets.some(t => t.includes(query) || query.includes(t));
+    });
+  }
+
   return (
     <div className="container py-8 px-4 md:px-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Medicinal Plants Directory</h1>
-          <p className="text-muted-foreground mt-2">Browse the comprehensive list of Indian medicinal plants.</p>
+          <p className="text-muted-foreground mt-2">
+            {query ? `Search results for "${searchParams.q}"` : 'Browse the comprehensive list of Indian medicinal plants, arranged alphabetically.'}
+          </p>
         </div>
         
         {/* Simple Filter placeholder */}
         <div className="flex gap-2 w-full md:w-auto overflow-x-auto pb-2 md:pb-0">
-          <Badge variant="secondary" className="px-3 py-1 cursor-pointer">All Categories</Badge>
+          <Badge variant={query ? 'outline' : 'secondary'} className="px-3 py-1 cursor-pointer">
+            <Link href="/plants">All Categories</Link>
+          </Badge>
           <Badge variant="outline" className="px-3 py-1 cursor-pointer whitespace-nowrap">Respiratory</Badge>
           <Badge variant="outline" className="px-3 py-1 cursor-pointer whitespace-nowrap">Digestive</Badge>
           <Badge variant="outline" className="px-3 py-1 cursor-pointer whitespace-nowrap">Skin</Badge>
         </div>
       </div>
 
-      {plants.length === 0 ? (
+      {displayPlants.length === 0 ? (
         <div className="text-center py-12">
-          <p className="text-muted-foreground">No plants found. Try seeding the database.</p>
+          <p className="text-muted-foreground text-lg">No plants matched your search "{searchParams.q}".</p>
+          <Link href="/plants" className="text-green-600 hover:underline mt-4 inline-block">Clear search</Link>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {plants.map((plant: Record<string, any>) => (
+          {displayPlants.map((plant: Record<string, any>) => (
             <Link href={`/plants/${plant.slug}`} key={plant.id}>
               <Card className="h-full hover:shadow-lg transition-shadow overflow-hidden flex flex-col group border-0 shadow-md">
                 <div className="aspect-4/3 w-full relative overflow-hidden bg-muted">

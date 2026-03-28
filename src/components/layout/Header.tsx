@@ -1,8 +1,8 @@
 import Link from 'next/link';
 import { Leaf } from 'lucide-react';
 import { buttonVariants } from '@/components/ui/button-variants';
-import { Input } from '@/components/ui/input';
 import { createClient } from '@/utils/supabase/server';
+import SearchInput from './SearchInput';
 
 export default async function Header() {
   const supabase = await createClient();
@@ -42,12 +42,7 @@ export default async function Header() {
         <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
           <div className="w-full flex-1 md:w-auto md:flex-none">
             <div className="relative">
-              <Input
-                id="search-plants-input"
-                type="search"
-                placeholder="Search plants..."
-                className="h-9 md:w-[300px]"
-              />
+              <SearchInput />
             </div>
           </div>
           <nav className="flex items-center space-x-2">

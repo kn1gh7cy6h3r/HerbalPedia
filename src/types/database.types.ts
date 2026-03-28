@@ -21,6 +21,7 @@ export interface Database {
           description: string
           habitat: string | null
           identification_features: string[] | null
+          regions_in_india: string[] | null
           parts_used: string[]
           images: Json[] // { url: string, alt: string, caption?: string, isPrimary?: boolean }
           medicinal_uses: Json[] // { ailment_id?: string, ailment_name: string, effectiveness: string, description: string, scientifically_proven: boolean }
@@ -33,6 +34,7 @@ export interface Database {
           toxicity: Json | null // { level: string, details?: string }
           pregnancy_safe: boolean | null
           lactation_safe: boolean | null
+          drug_interactions: string[] | null
           substitutes: Json[] | null
           active_compounds: string[] | null
           scientific_references: Json[] | null
